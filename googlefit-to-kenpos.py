@@ -53,8 +53,8 @@ def getSteps(conf):
     http_auth = credentials.authorize(httplib2.Http())
     req = build('fitness', 'v1', http=http_auth)
     # 
-    # 日別の2週間分の歩数取得
-    stopDate = datetime.combine(date.today(), time()) + timedelta(days=1,hours=4)
+    # 日別の2週間分の歩数取得(JST 4:00)
+    stopDate = datetime.combine(date.today(), time(19)) - timedelta(days=1)
     startDate = stopDate - timedelta(days=13)
     #
     import time as t
@@ -78,7 +78,7 @@ def getSteps(conf):
     # 歩数データの整形
     dailySteps = []
     for data in steps['bucket']:
-        startTime = datetime.fromtimestamp(int(data['startTimeMillis'])/1000)
+        startTime = datetime.fromtimestamp(int(data['startTimeMillis'])/1000) + timedelta(days=1)
         dataset = data['dataset'][0]
         if 'point' in dataset:
             value = dataset['point'][0]['value']
