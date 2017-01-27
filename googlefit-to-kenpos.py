@@ -42,12 +42,14 @@ def lambda_handler(event, context):
 
 def getSteps(conf):
     # 認証情報の読み込み
-    #from os import path
-    #from shutil import copyfile
-    # if not path.isfile('/tmp/googlefit_credential') :
-    #    copyfile('googlefit_credential' , '/tmp/googlefit_credential' )
+    import os
+    from os import path
+    from shutil import copyfile
+    if not path.isfile('/tmp/googlefit_credential') :
+        copyfile('./googlefit_credential' , '/tmp/googlefit_credential' )
+        os.chmod('/tmp/googlefit_credential',0666)
     #
-    storage = Storage('./googlefit_credential')
+    storage = Storage('/tmp/googlefit_credential')
     credentials = storage.get()
     #
     http_auth = credentials.authorize(httplib2.Http())
@@ -131,7 +133,7 @@ def postKenops(steps,conf):
                 if conf['action']['defalut'] : actionFlg = 1
             if action_id in conf['action'] :
                 if conf['action'][action_id] : actionFlg = 1
-            url = 'http://www.kenpos.jp/healthAction/statusUpdate/%d?mode=gadget' % (actionFlg)
+            url = 'https://www.kenpos.jp/healthAction/statusUpdate/%d?mode=gadget' % (actionFlg)
             #Post
             req = mechanize.Request(url, req_words, headers)
             res = br.open(req)
