@@ -98,7 +98,7 @@ def postKenops(steps,conf):
     br.set_handle_robots(False)
     html = br.open('https://www.kenpos.jp/member/login')
     # ログイン
-    br.select_form(nr=1)
+    br.select_form(nr=0)
     br['authKenpos2012[login_id]'] = loginId
     br['authKenpos2012[password]'] = password
     res = br.submit()
@@ -108,19 +108,27 @@ def postKenops(steps,conf):
     # 歩数入力
     for step in steps:
         field = 'health[step_count_%s][value]' % (step['date'])
-        br[field]=str(step['count'])
+        try:
+            br[field]=str(step['count'])
+        except mechanize._form.ControlNotFoundError :
+            print 'skipping field:%s' % (field) 
     res = br.submit()
     #
     # 行動入力
     br.follow_link(text_regex = u'行動項目入力'.encode('utf-8'))
     for step in steps :
         url = '/healthAction/statusInput?date=%s' % (step['date'])
-        br.open(url)
-        headers = {
-          'Content-Type' : 'application/x-www-form-urlencoded',
-          'X-Requested-With' : 'XMLHttpRequest'
-        }
-        # ボタンを押す
+        try:
+            br.open(url)
+            headers = {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'X-Requested-With' : 'XMLHttpRequest'
+            }
+            # ボタンを押す
+        except mechanize.HTTPError :
+            print 'skipping url:%s' % (url)
+            continue
+
         for f in br.forms():
             action_id = f.find_control(name='kenpos_member_health_action_status[health_action_id]').value
             req_words  = "kenpos_member_health_action_status%5Bid%5D=" + f.find_control( name='kenpos_member_health_action_status[id]').value
