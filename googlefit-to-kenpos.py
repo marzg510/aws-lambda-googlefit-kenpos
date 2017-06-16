@@ -93,6 +93,7 @@ def getSteps(conf):
 def postKenops(steps,conf):
     loginId  = conf['login_id']
     password = conf['password']
+    print "logining by" + loginId
     #
     br = mechanize.Browser()
     br.set_handle_robots(False)
@@ -102,10 +103,21 @@ def postKenops(steps,conf):
     br['authKenpos2012[login_id]'] = loginId
     br['authKenpos2012[password]'] = password
     res = br.submit()
+#    print res.read()
     # 歩数入力画面
-    br.follow_link(text_regex = u'記録をつける'.encode('utf-8'))
+    for link in br.links():
+#        print link.text, link.url
+        if u'記録をつける' in link.text:
+            l = link
+#    br.follow_link(text_regex = re.compile(u'記録をつける'.encode('utf-8')))
+#    br.follow_link(text_regex = re.compile("記録をつける"))
+    br.follow_link(l)
+#    r = br.find_link(text_regex = re.compile("記録をつける"))
+#    r = br.find_link(text="記録をつける")
+#    print r
     br.select_form(nr=0)
     # 歩数入力
+    print "updating step count"
     for step in steps:
         field = 'health[step_count_%s][value]' % (step['date'])
         try:
@@ -115,7 +127,13 @@ def postKenops(steps,conf):
     res = br.submit()
     #
     # 行動入力
-    br.follow_link(text_regex = u'行動項目入力'.encode('utf-8'))
+    print "updating behavior"
+    for link in br.links():
+#        print link.text, link.url
+        if u'行動項目入力' in link.text:
+            l = link
+#    br.follow_link(text_regex = u'行動項目入力'.encode('utf-8'))
+    br.follow_link(l)
     for step in steps :
         url = '/healthAction/statusInput?date=%s' % (step['date'])
         try:
@@ -130,9 +148,10 @@ def postKenops(steps,conf):
             continue
 
         for f in br.forms():
+#            print f
             action_id = f.find_control(name='kenpos_member_health_action_status[health_action_id]').value
-            req_words  = "kenpos_member_health_action_status%5Bid%5D=" + f.find_control( name='kenpos_member_health_action_status[id]').value
-            req_words += "&kenpos_member_health_action_status%5Bhealth_action_id%5D=" + action_id
+#            req_words  = "kenpos_member_health_action_status%5Bid%5D=" + f.find_control( name='kenpos_member_health_action_status[id]').value
+            req_words = "&kenpos_member_health_action_status%5Bhealth_action_id%5D=" + action_id
             req_words += "&kenpos_member_health_action_status%5Btarget_date%5D=" + f.find_control(name='kenpos_member_health_action_status[target_date]').value
             req_words += "&kenpos_member_health_action_status%5B_csrf_token%5D=" + f.find_control(name='kenpos_member_health_action_status[_csrf_token]').value
             #
