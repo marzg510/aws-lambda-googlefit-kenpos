@@ -93,7 +93,7 @@ def getSteps(conf):
 def postKenops(steps,conf):
     loginId  = conf['login_id']
     password = conf['password']
-    print "logining by" + loginId
+    print "logining by " + loginId
     #
     br = mechanize.Browser()
     br.set_handle_robots(False)
@@ -118,11 +118,14 @@ def postKenops(steps,conf):
     br.select_form(nr=0)
     # 歩数入力
     print "updating step count"
+#    for form in br.forms():
+#        print form
+#    print mechanize._form
     for step in steps:
         field = 'health[step_count_%s][value]' % (step['date'])
         try:
             br[field]=str(step['count'])
-        except mechanize._form.ControlNotFoundError :
+        except mechanize._form_controls.ControlNotFoundError :
             print 'skipping field:%s' % (field) 
     res = br.submit()
     #
