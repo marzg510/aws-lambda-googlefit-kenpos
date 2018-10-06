@@ -55,8 +55,8 @@ def getSteps(conf):
     http_auth = credentials.authorize(httplib2.Http())
     req = build('fitness', 'v1', http=http_auth)
     # 
-    # 日別の2週間分の歩数取得(JST 4:00)
-    stopDate = datetime.combine(date.today(), time(19)) - timedelta(days=1)
+    # 日別の2週間分の歩数取得
+    stopDate = datetime.combine(date.today(), time(0))
     startDate = stopDate - timedelta(days=13)
     #
     import time as t
@@ -80,7 +80,7 @@ def getSteps(conf):
     # 歩数データの整形
     dailySteps = []
     for data in steps['bucket']:
-        startTime = datetime.fromtimestamp(int(data['startTimeMillis'])/1000) + timedelta(days=1)
+        startTime = datetime.fromtimestamp(int(data['startTimeMillis'])/1000)
         dataset = data['dataset'][0]
         if 'point' in dataset:
             value = dataset['point'][0]['value']
@@ -88,6 +88,8 @@ def getSteps(conf):
                 'date' : startTime.strftime('%Y-%m-%d'),
                 'count' : value[0]['intVal']
             })
+            print startTime.strftime('%Y-%m-%d %H:%M:%S')
+            print datetime.fromtimestamp(int(data['startTimeMillis'])/1000)
     return dailySteps
 
 def postKenops(steps,conf):
